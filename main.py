@@ -14,6 +14,12 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
 
+def draw_text(text, font, color, surface, x, y):
+    text_obj = font.render(text, True, color)
+    text_rect = text_obj.get_rect()
+    text_rect.center = (x, y)
+    surface.blit(text_obj, text_rect)
+
 class Button():
     def __init__(self, text, width, height, pos, elevation, color, hover):
         self.elevation = elevation
@@ -24,7 +30,7 @@ class Button():
         self.top_rect = pygame.Rect(pos,(width,height))
         self.top_color = color
         self.bottom_rect = pygame.Rect(pos,(width,height))
-        font = pygame.font.SysFont('rockwell', 50)
+        font = pygame.font.Font('font/CampanaScript_PERSONAL_USE_ONLY.otf', 110)
         self.text_surf = font.render(text,True,(255,255,255))
         self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
         self.name = text
@@ -36,8 +42,31 @@ class Button():
             print("Wczytanie zapisanych")
             # tu bedzie zrobic zapisy wszystkie
         elif self.name == "Rules":
-            print("Zasady")
-            # tu trzeba bedzie dopisac
+            SCREEN_WIDTH = 800
+            SCREEN_HEIGHT = 800
+            screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+            pygame.display.set_caption("Rook-Game-Rules")
+            screen.fill('wheat3')
+
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            main()
+
+                background_image = pygame.image.load("grafiki/Zasady.png").convert()
+                screen_rect = screen.get_rect()
+                image_rect = background_image.get_rect()
+                image_x = screen_rect.centerx - image_rect.width // 2
+                image_y = screen_rect.centery - image_rect.height // 2
+                screen.fill((255, 244, 229))
+                screen.blit(background_image,(image_x, image_y-125))
+                pygame.display.update()
+
+
         elif self.name == "Settings":
             print("Ustawienia")
             # tutaj przyciski z ustawieniami
@@ -79,18 +108,17 @@ class Button():
         return action
 
 def main():
-    start_button = Button("Play", 250, 125, (300, 25), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    load_button = Button("Load", 250, 125, (300, 175), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    rules_button = Button("Rules", 250, 125, (300, 325), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    settings_button = Button("Settings", 250, 125, (300, 475), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    quit_button = Button("Quit", 250, 125, (300, 625), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    background_image = pygame.image.load("grafiki/tlo.png").convert()
-
-    while True:
+    start_button = Button("Play", 250, 125, (275, 25), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    load_button = Button("Load", 250, 125, (275, 175), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    rules_button = Button("Rules", 250, 125, (275, 325), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    settings_button = Button("Settings", 250, 125, (275, 475), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    quit_button = Button("Quit", 250, 125, (275, 625), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    run = True
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                run = False
+        background_image = pygame.image.load("grafiki/tlo.png").convert()
         WIN.fill((255, 255, 255))
         WIN.blit(background_image, (0, 0))
         start_button.draw_button(WIN)
@@ -99,7 +127,8 @@ def main():
         settings_button.draw_button(WIN)
         quit_button.draw_button(WIN)
         pygame.display.update()
-
+    pygame.quit()
+    sys.exit()
 class Game:
     def __init__(self):
         #pygame.init()
