@@ -1,6 +1,7 @@
 from pathlib import Path
 import pygame
 import sys
+import time
 
 pygame.init()
 
@@ -10,6 +11,7 @@ WINDOW_TITLE = "Rook-Game"
 pygame.display.set_caption(WINDOW_TITLE)
 icon = pygame.image.load('grafiki/icon.png')
 pygame.display.set_icon(icon)
+
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -112,13 +114,15 @@ def main():
     button_width = 330
     button_length = 125
     position_x = (WIDTH-button_width)/2
+    position_y = 25
     path = Path('./save.txt')
     if path.is_file() and bool(path.stat().st_size):
-        load_button = Button("Continuation", button_width, button_length, (position_x, 25), 20,(128, 128, 255, 128), (255, 128, 255, 128))
-    new_game_button = Button("New Game", button_width, button_length, (position_x, 175), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    rules_button = Button("Rules", button_width, button_length, (position_x, 325), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    settings_button = Button("Settings", button_width, button_length, (position_x, 475), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    quit_button = Button("Quit", button_width, button_length, (position_x, 625), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+        load_button = Button("Continuation", button_width, button_length, (position_x, position_y), 20,(128, 128, 255, 128), (255, 128, 255, 128))
+        position_y += 150
+    new_game_button = Button("New Game", button_width, button_length, (position_x, position_y), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    rules_button = Button("Rules", button_width, button_length, (position_x, position_y+150), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    settings_button = Button("Settings", button_width, button_length, (position_x, position_y+300), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    quit_button = Button("Quit", button_width, button_length, (position_x, position_y+450), 20, (128, 128, 255, 128), (255, 128, 255, 128))
     run = True
     while run:
         for event in pygame.event.get():
@@ -142,6 +146,7 @@ class Game:
         self.font = pygame.font.Font('font/CASEFONT.TTF', 100)
         #self.font = pygame.font.Font('font/CHEQ_TT.TTF', 100)
 
+        self.counter_draw_moves = 0
         self.SZER = 800
         self.WYS = 800
         self.screen = pygame.display.set_mode([self.SZER, self.WYS])
@@ -237,6 +242,7 @@ class Game:
         for i in range((len(bierki))):
             pozycja = pozycje[i]
             bierka = bierki[i]
+            # 3 razy
             if bierka == 't':
                 moves_list = self.ruchy_wieza(pozycja, czyja_tura)
             elif bierka == 'r':
@@ -337,6 +343,8 @@ class Game:
                                 self.pola_czarnych.pop(black_piece)
                             self.czarne_opcje = self.opcje_ruchu(self.czarne_bierki, self.pola_czarnych, 'czarny')
                             self.biale_opcje = self.opcje_ruchu(self.biale_bierki, self.pola_bialych, 'bialy')
+                            if len(self.biale_bierki) == len(self.czarne_bierki):
+                                self.counter_draw_moves += 1
                             self.etap = 2
                             self.tmp = 100
                             self.wsje_ruchy = []
@@ -359,10 +367,15 @@ class Game:
                                 self.pola_bialych.pop(biala_bierka)
                             self.czarne_opcje = self.opcje_ruchu(self.czarne_bierki, self.pola_czarnych, 'czarny')
                             self.biale_opcje = self.opcje_ruchu(self.biale_bierki, self.pola_bialych, 'bialy')
+                            if len(self.biale_bierki) == len(self.czarne_bierki):
+                                self.counter_draw_moves += 1
                             self.etap = 0
                             self.tmp = 100
                             self.wsje_ruchy = []
-
+                if self.counter_draw_moves == 6:
+                    print("Remis")
+                    time.sleep(0.3)
+                    main()
             pygame.display.flip()
 
         pygame.quit()
