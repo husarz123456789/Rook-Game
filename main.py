@@ -12,6 +12,9 @@ pygame.display.set_caption(WINDOW_TITLE)
 icon = pygame.image.load('grafiki/icon.png')
 pygame.display.set_icon(icon)
 
+chess_pieces = 'font/CHEQ_TT.TTF'
+#chess_pieces = 'font/CASEFONT.TTF'
+
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -142,10 +145,7 @@ def main():
     sys.exit()
 class Game:
     def __init__(self):
-
-        self.font = pygame.font.Font('font/CASEFONT.TTF', 100)
-        #self.font = pygame.font.Font('font/CHEQ_TT.TTF', 100)
-
+        self.font = pygame.font.Font(chess_pieces, 100)
         self.counter_draw_moves = 0
         self.SZER = 800
         self.WYS = 800
