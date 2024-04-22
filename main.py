@@ -1,3 +1,4 @@
+from pathlib import Path
 import pygame
 import sys
 
@@ -35,10 +36,10 @@ class Button():
         self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
         self.name = text
     def check_action(self):
-        if self.name == "Play":
+        if self.name == "New Game":
             game = Game()
             game.run()
-        elif self.name == "Load":
+        elif self.name == "Continuation":
             print("Wczytanie zapisanych")
             # tu bedzie zrobic zapisy wszystkie
         elif self.name == "Rules":
@@ -108,11 +109,16 @@ class Button():
         return action
 
 def main():
-    start_button = Button("Play", 250, 125, (275, 25), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    load_button = Button("Load", 250, 125, (275, 175), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    rules_button = Button("Rules", 250, 125, (275, 325), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    settings_button = Button("Settings", 250, 125, (275, 475), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    quit_button = Button("Quit", 250, 125, (275, 625), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    button_width = 330
+    button_length = 125
+    position_x = (WIDTH-button_width)/2
+    path = Path('./save.txt')
+    if path.is_file() and bool(path.stat().st_size):
+        load_button = Button("Continuation", button_width, button_length, (position_x, 25), 20,(128, 128, 255, 128), (255, 128, 255, 128))
+    new_game_button = Button("New Game", button_width, button_length, (position_x, 175), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    rules_button = Button("Rules", button_width, button_length, (position_x, 325), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    settings_button = Button("Settings", button_width, button_length, (position_x, 475), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    quit_button = Button("Quit", button_width, button_length, (position_x, 625), 20, (128, 128, 255, 128), (255, 128, 255, 128))
     run = True
     while run:
         for event in pygame.event.get():
@@ -121,8 +127,9 @@ def main():
         background_image = pygame.image.load("grafiki/tlo.png").convert()
         WIN.fill((255, 255, 255))
         WIN.blit(background_image, (0, 0))
-        start_button.draw_button(WIN)
-        load_button.draw_button(WIN)
+        if path.is_file() and bool(path.stat().st_size):
+            load_button.draw_button(WIN)
+        new_game_button.draw_button(WIN)
         rules_button.draw_button(WIN)
         settings_button.draw_button(WIN)
         quit_button.draw_button(WIN)
@@ -131,12 +138,13 @@ def main():
     sys.exit()
 class Game:
     def __init__(self):
-        #pygame.init()
+
+        self.font = pygame.font.Font('font/CASEFONT.TTF', 100)
+        #self.font = pygame.font.Font('font/CHEQ_TT.TTF', 100)
 
         self.SZER = 800
         self.WYS = 800
         self.screen = pygame.display.set_mode([self.SZER, self.WYS])
-        self.font = pygame.font.Font('font/Truecat.ttf', 50)
         self.zegar = pygame.time.Clock()
         self.fps = 60
         self.tlo = 'wheat3'
@@ -150,13 +158,10 @@ class Game:
         self.etap = 0
         self.wsje_ruchy = []
 
-        self.biale_grafiki = [pygame.transform.scale(pygame.image.load('grafiki/biala.png'), (80, 80))]
-        self.czarne_grafiki = [pygame.transform.scale(pygame.image.load('grafiki/czarna.png'), (80, 80))]
-
         self.pola_bialych = [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1)]
         self.pola_czarnych = [(0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (5, 7), (6, 7), (7, 7),(0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6), (7, 6)]
 
-        self.bierki = ['W']
+        self.bierki = ['t', 'r']
         self.zbite_biale = []
         self.zbite_czarne = []
 
@@ -164,8 +169,8 @@ class Game:
         self.czarne_bierki = []
 
         for i in range(16):
-            self.biale_bierki.append('W')
-            self.czarne_bierki.append('W')
+            self.biale_bierki.append('r')
+            self.czarne_bierki.append('t')
 
         self.tmp = 100
         self.counter = 0
@@ -178,6 +183,11 @@ class Game:
 
         self.biale_opcje = self.opcje_ruchu(self.biale_bierki, self.pola_bialych, 'bialy')
         self.czarne_opcje = self.opcje_ruchu(self.czarne_bierki, self.pola_czarnych, 'czarny')
+
+    @staticmethod
+    def render_text(text, font, color):
+        text_surface = font.render(text, True, color)
+        return text_surface, text_surface.get_rect()
 
     def na_oborot(self):
         yeet = []
@@ -199,22 +209,27 @@ class Game:
             pygame.draw.rect(self.screen, 'wheat4', [0, 800, self.SZER, 100], 5)
             pygame.draw.rect(self.screen, 'wheat4', [800, 0, 200, self.WYS], 5)
 
-            tekst = ['Ruch bialego', 'Kaj jedzie bialy?', 'Ruch czarnego', 'Kaj jedzie czarny?']
-            self.screen.blit(self.font.render(tekst[self.etap], True, 'wheat4'), (40, self.WYS - 400))
-
     def rysuj_bierki(self):
         for i in range(len(self.biale_bierki)):
             index = self.bierki.index(self.biale_bierki[i])
-            self.screen.blit(self.biale_grafiki[index], (self.pola_bialych[i][0] * 100 + 10, self.pola_bialych[i][1] * 100 + 10))
+            text_surface, text_rect = self.render_text(self.biale_bierki[i], self.font, 'black')
+            text_rect.center = (self.pola_bialych[i][0] * 100 + 50, self.pola_bialych[i][1] * 100 + 50)
+            self.screen.blit(text_surface, text_rect)
             if self.etap < 2:
                 if self.tmp == i:
-                    pygame.draw.rect(self.screen, 'red', [self.pola_bialych[i][0] * 100 + 1, self.pola_bialych[i][1] * 100 + 1, 100, 100], 2)
+                    pygame.draw.rect(self.screen, 'red',
+                                     [self.pola_bialych[i][0] * 100 + 1, self.pola_bialych[i][1] * 100 + 1, 100, 100],
+                                     2)
         for i in range(len(self.czarne_bierki)):
             index = self.bierki.index(self.czarne_bierki[i])
-            self.screen.blit(self.czarne_grafiki[index], (self.pola_czarnych[i][0] * 100 + 10, self.pola_czarnych[i][1] * 100 + 10))
+            text_surface, text_rect = self.render_text(self.czarne_bierki[i], self.font, 'black')
+            text_rect.center = (self.pola_czarnych[i][0] * 100 + 50, self.pola_czarnych[i][1] * 100 + 50)
+            self.screen.blit(text_surface, text_rect)
             if self.etap >= 2:
                 if self.tmp == i:
-                    pygame.draw.rect(self.screen, 'blue', [self.pola_czarnych[i][0] * 100 + 1, self.pola_czarnych[i][1] * 100 + 1, 100, 100], 2)
+                    pygame.draw.rect(self.screen, 'blue',
+                                     [self.pola_czarnych[i][0] * 100 + 1, self.pola_czarnych[i][1] * 100 + 1, 100, 100],
+                                     2)
 
     def opcje_ruchu(self, bierki, pozycje, czyja_tura):
         moves_list = []
@@ -222,7 +237,9 @@ class Game:
         for i in range((len(bierki))):
             pozycja = pozycje[i]
             bierka = bierki[i]
-            if bierka == 'W':
+            if bierka == 't':
+                moves_list = self.ruchy_wieza(pozycja, czyja_tura)
+            elif bierka == 'r':
                 moves_list = self.ruchy_wieza(pozycja, czyja_tura)
             all_moves_list.append(moves_list)
         return all_moves_list
