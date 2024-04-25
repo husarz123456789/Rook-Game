@@ -12,10 +12,6 @@ pygame.display.set_caption(WINDOW_TITLE)
 icon = pygame.image.load('grafiki/icon.png')
 pygame.display.set_icon(icon)
 
-chess_pieces = 'font/CHEQ_TT.TTF'
-#chess_pieces = 'font/CASEFONT.TTF'
-
-
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
@@ -26,112 +22,56 @@ def draw_text(text, font, color, surface, x, y):
     text_rect.center = (x, y)
     surface.blit(text_obj, text_rect)
 
-class Button():
-    def __init__(self, text, width, height, pos, elevation, color, hover):
-        self.elevation = elevation
-        self.original_y_pos = pos[1]
-        self.color = color
-        self.hover = hover
-        self.clicked = False
-        self.top_rect = pygame.Rect(pos,(width,height))
-        self.top_color = color
-        self.bottom_rect = pygame.Rect(pos,(width,height))
-        font = pygame.font.Font('font/CampanaScript_PERSONAL_USE_ONLY.otf', 110)
-        self.text_surf = font.render(text,True,(255,255,255))
-        self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
-        self.name = text
-    def check_action(self):
-        if self.name == "New Game":
-            game = Game()
-            game.run()
-        elif self.name == "Continuation":
-            print("Wczytanie zapisanych")
-            # tu bedzie zrobic zapisy wszystkie
-        elif self.name == "Rules":
-            SCREEN_WIDTH = 800
-            SCREEN_HEIGHT = 800
-            screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-            pygame.display.set_caption("Rook-Game-Rules")
-            screen.fill('wheat3')
 
-            while True:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            main()
+class Figure():
+    def __init__(self, font):
+        self.graphics = [('Nowoczesne', 'font/CHEQ_TT.TTF'),
+                         ('Przypadki', 'font/CASEFONT.TTF'),
+                         ('Maya', 'font/MAYAFONT.TTF'),
+                         ('Alfa', 'font/Alpha.TTF'),
+                         ('Condal','font/CONDFONT.TTF'),
+                         ('Leipzig','font/LEIPFONT.TTF')]
+        self.tmp = ''
+        for i in self.graphics:
+            if i[0] == font:
+                self.tmp = i[1]
+                f = open("settings.txt", "w")
+                f.write(i[1])
+                f.close()
+        self.font = pygame.font.Font(self.tmp, 100)
+        self.bierki = ['t', 'r']
+        self.text_surface = ""
+        self.text_surface = ""
 
-                background_image = pygame.image.load("grafiki/Zasady.png").convert()
-                screen_rect = screen.get_rect()
-                image_rect = background_image.get_rect()
-                image_x = screen_rect.centerx - image_rect.width // 2
-                image_y = screen_rect.centery - image_rect.height // 2
-                screen.fill((255, 244, 229))
-                screen.blit(background_image,(image_x, image_y-125))
-                pygame.display.update()
-
-
-        elif self.name == "Settings":
-            print("Ustawienia")
-            # tutaj przyciski z ustawieniami
-        elif self.name == "Quit":
-            pygame.quit()
-            sys.exit()
-
-    def draw_button(self, screen):
-        action = False
-        pos = pygame.mouse.get_pos()
-        top_rect = self.top_rect.copy()
-        bottom_rect = self.bottom_rect.copy()
-        bottom_rect.x += 20
-        bottom_rect.y += 20
-        if top_rect.collidepoint(pos):
-            self.top_color = self.hover
-            if pygame.mouse.get_pressed()[0]:
-                self.clicked = True
-                bottom_rect.inflate_ip(self.elevation, self.elevation)
-                top_rect.inflate_ip(self.elevation, self.elevation)
-
-            elif pygame.mouse.get_pressed()[0] == 0 and self.clicked == True:
-                self.clicked = False
-                action = True
-                self.check_action()
-            self.top_color = self.hover
-        else:
-            self.top_color = self.color
-
-        bottom_surf = pygame.Surface(bottom_rect.size, pygame.SRCALPHA)
-        pygame.draw.rect(bottom_surf, 0, (0, 0, *bottom_rect.size), border_radius = 12)
-        screen.blit(bottom_surf, bottom_rect.topleft)
-
-        top_surf = pygame.Surface(top_rect.size, pygame.SRCALPHA)
-        pygame.draw.rect(top_surf, self.top_color, (0, 0, *top_rect.size), border_radius = 12)
-        screen.blit(top_surf, top_rect.topleft)
-
-        screen.blit(self.text_surf, self.text_rect)
-        return action
+    @staticmethod
+    def render_text(text, font, color):
+        text_surface = font.render(text, True, color)
+        return text_surface, text_surface.get_rect()
+    def rysuj_bierke(self):
+        index = self.bierki.index(self.bierki[0])
+        text_surface, text_rect = self.render_text(self.bierki[1], self.font, 'white')
+        text_rect.center = (570, 225)
+        return text_surface, text_rect
 
 def main():
-    button_width = 330
-    button_length = 125
+    button_width = 250
+    button_length = 100
     position_x = (WIDTH-button_width)/2
-    position_y = 25
+    position_y = 75
     path = Path('./save.txt')
     if path.is_file() and bool(path.stat().st_size):
         load_button = Button("Continuation", button_width, button_length, (position_x, position_y), 20,(128, 128, 255, 128), (255, 128, 255, 128))
-        position_y += 150
+        position_y += 125
     new_game_button = Button("New Game", button_width, button_length, (position_x, position_y), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    rules_button = Button("Rules", button_width, button_length, (position_x, position_y+150), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    settings_button = Button("Settings", button_width, button_length, (position_x, position_y+300), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    quit_button = Button("Quit", button_width, button_length, (position_x, position_y+450), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    rules_button = Button("Rules", button_width, button_length, (position_x, position_y+125), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    settings_button = Button("Settings", button_width, button_length, (position_x, position_y+250), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    quit_button = Button("Quit", button_width, button_length, (position_x, position_y+375), 20, (128, 128, 255, 128), (255, 128, 255, 128))
     run = True
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        background_image = pygame.image.load("grafiki/tlo.png").convert()
+        background_image = pygame.image.load("grafiki/tlo1.png").convert()
         WIN.fill((255, 255, 255))
         WIN.blit(background_image, (0, 0))
         if path.is_file() and bool(path.stat().st_size):
@@ -143,10 +83,12 @@ def main():
         pygame.display.update()
     pygame.quit()
     sys.exit()
+
 class Game:
-    def __init__(self):
-        self.font = pygame.font.Font(chess_pieces, 100)
+    def __init__(self, font):
+        self.font = pygame.font.Font(font, 100)
         self.counter_draw_moves = 0
+        self.counter_caption = 0
         self.SZER = 800
         self.WYS = 800
         self.screen = pygame.display.set_mode([self.SZER, self.WYS])
@@ -242,7 +184,6 @@ class Game:
         for i in range((len(bierki))):
             pozycja = pozycje[i]
             bierka = bierki[i]
-            # 3 razy
             if bierka == 't':
                 moves_list = self.ruchy_wieza(pozycja, czyja_tura)
             elif bierka == 'r':
@@ -303,83 +244,254 @@ class Game:
     def run(self):
         run = True
         while run:
-            self.zegar.tick(self.fps)
-            self.screen.fill(self.tlo)
-
-            self.rysuj_szachownice()
-            self.rysuj_bierki()
-
-            if self.tmp != 100:
-                self.wsje_ruchy = self.sprawdz_wsje_ruchy()
-                self.draw_valid(self.wsje_ruchy)
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        main()
-
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not self.game_over:
-                    x_coord = event.pos[0] // 100
-                    y_coord = event.pos[1] // 100
-                    klik_coords = (x_coord, y_coord)
-                    if self.etap <= 1:
-                        if klik_coords == (8, 8) or klik_coords == (9, 8):
-                            print('surrender bialych')
-                            self.winner = 'black'
-                        if klik_coords in self.pola_bialych:
-                            self.tmp = self.pola_bialych.index(klik_coords)
-                            if self.etap == 0:
-                                self.etap = 1
-                        if klik_coords in self.wsje_ruchy and self.tmp != 100:
-                            self.pola_bialych[self.tmp] = klik_coords
-                            if klik_coords in self.pola_czarnych:
-                                black_piece = self.pola_czarnych.index(klik_coords)
-                                self.zbite_biale.append(self.czarne_bierki[black_piece])
-                                if self.czarne_bierki[black_piece] == 'king':
-                                    self.winner = 'white'
-                                self.czarne_bierki.pop(black_piece)
-                                self.pola_czarnych.pop(black_piece)
-                            self.czarne_opcje = self.opcje_ruchu(self.czarne_bierki, self.pola_czarnych, 'czarny')
-                            self.biale_opcje = self.opcje_ruchu(self.biale_bierki, self.pola_bialych, 'bialy')
-                            if len(self.biale_bierki) == len(self.czarne_bierki):
-                                self.counter_draw_moves += 1
-                            self.etap = 2
-                            self.tmp = 100
-                            self.wsje_ruchy = []
-                    if self.etap > 1:
-                        if klik_coords == (8, 8) or klik_coords == (9, 8):
-                            self.winner = 'bialy'
-                        if klik_coords in self.pola_czarnych:
-                            self.tmp = self.pola_czarnych.index(klik_coords)
-                            if self.etap == 2:
-                                self.etap = 3
-                        if klik_coords in self.wsje_ruchy and self.tmp != 100:
-                            self.pola_czarnych[self.tmp] = klik_coords
+            if self.winner == 'bialy':
+                img = pygame.image.load("grafiki/bialy_win.png").convert()
+                screen_rect = self.screen.get_rect()
+                img_rect = img.get_rect()
+                img_x = screen_rect.centerx - img_rect.width // 2
+                img_y = screen_rect.centery - img_rect.height // 2
+                self.screen.fill((255, 244, 229))
+                self.screen.blit(img, (img_x, img_y))
+                pygame.display.update()
+                i = 0
+                while i < 50:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            run = False
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                main()
+                    pygame.time.wait(70)
+                    i = i + 1
+                main()
+            elif self.winner == 'czarny':
+                img = pygame.image.load("grafiki/czarny_win.png").convert()
+                screen_rect = self.screen.get_rect()
+                img_rect = img.get_rect()
+                img_x = screen_rect.centerx - img_rect.width // 2
+                img_y = screen_rect.centery - img_rect.height // 2
+                self.screen.fill((255, 244, 229))
+                self.screen.blit(img, (img_x, img_y))
+                pygame.display.update()
+                i = 0
+                while i < 50:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            run = False
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                main()
+                    pygame.time.wait(70)
+                    i = i + 1
+                main()
+            else:
+                self.zegar.tick(self.fps)
+                self.screen.fill(self.tlo)
+                self.rysuj_szachownice()
+                self.rysuj_bierki()
+                ile_czarnych_bierek = len(self.czarne_bierki)
+                ile_bialych_bierek = len(self.biale_bierki)
+                if self.tmp != 100:
+                    self.wsje_ruchy = self.sprawdz_wsje_ruchy()
+                    self.draw_valid(self.wsje_ruchy)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        run = False
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            main()
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not self.game_over:
+                        x_coord = event.pos[0] // 100
+                        y_coord = event.pos[1] // 100
+                        klik_coords = (x_coord, y_coord)
+                        if self.etap <= 1:
+                            # nie istniejacy przycisk poddawania sie xd
+                            if klik_coords == (8, 8) or klik_coords == (9, 8):
+                                print('surrender bialych')
+                                self.winner = 'czarny'
                             if klik_coords in self.pola_bialych:
-                                biala_bierka = self.pola_bialych.index(klik_coords)
-                                self.zbite_czarne.append(self.biale_bierki[biala_bierka])
-                                if len(self.biale_bierki) == 0:
-                                    self.winner = 'black'
-                                    print(self.winner)
-                                self.biale_bierki.pop(biala_bierka)
-                                self.pola_bialych.pop(biala_bierka)
-                            self.czarne_opcje = self.opcje_ruchu(self.czarne_bierki, self.pola_czarnych, 'czarny')
-                            self.biale_opcje = self.opcje_ruchu(self.biale_bierki, self.pola_bialych, 'bialy')
-                            if len(self.biale_bierki) == len(self.czarne_bierki):
-                                self.counter_draw_moves += 1
-                            self.etap = 0
-                            self.tmp = 100
-                            self.wsje_ruchy = []
-                if self.counter_draw_moves == 6:
-                    print("Remis")
-                    time.sleep(0.3)
-                    main()
-            pygame.display.flip()
+                                self.tmp = self.pola_bialych.index(klik_coords)
+                                if self.etap == 0:
+                                    self.etap = 1
+                            if klik_coords in self.wsje_ruchy and self.tmp != 100:
+                                self.pola_bialych[self.tmp] = klik_coords
+                                if klik_coords in self.pola_czarnych:
+                                    black_piece = self.pola_czarnych.index(klik_coords)
+                                    self.zbite_biale.append(self.czarne_bierki[black_piece])
+                                    self.counter_draw_moves = 0
+                                    self.czarne_bierki.pop(black_piece)
+                                    self.pola_czarnych.pop(black_piece)
+                                self.czarne_opcje = self.opcje_ruchu(self.czarne_bierki, self.pola_czarnych, 'czarny')
+                                self.biale_opcje = self.opcje_ruchu(self.biale_bierki, self.pola_bialych, 'bialy')
+                                self.etap = 2
+                                self.tmp = 100
+                                self.wsje_ruchy = []
+                        if self.etap > 1:
+                            if len(self.czarne_bierki) == 0:
+                                self.winner = 'bialy'
+                            if klik_coords in self.pola_czarnych:
+                                self.tmp = self.pola_czarnych.index(klik_coords)
+                                if self.etap == 2:
+                                    self.etap = 3
+                            if klik_coords in self.wsje_ruchy and self.tmp != 100:
+                                self.pola_czarnych[self.tmp] = klik_coords
+                                if klik_coords in self.pola_bialych:
+                                    biala_bierka = self.pola_bialych.index(klik_coords)
+                                    self.zbite_czarne.append(self.biale_bierki[biala_bierka])
+                                    self.counter_draw_moves = 0
+                                    if len(self.biale_bierki) == 0:
+                                        self.winner = 'czarny'
+                                    self.biale_bierki.pop(biala_bierka)
+                                    self.pola_bialych.pop(biala_bierka)
+                                self.czarne_opcje = self.opcje_ruchu(self.czarne_bierki, self.pola_czarnych, 'czarny')
+                                self.biale_opcje = self.opcje_ruchu(self.biale_bierki, self.pola_bialych, 'bialy')
+                                self.etap = 0
+                                self.tmp = 100
+                                self.wsje_ruchy = []
+                                if (len(self.biale_bierki) == ile_bialych_bierek and len(
+                                        self.czarne_bierki) == ile_czarnych_bierek):
+                                    self.counter_draw_moves += 1
+                    if len(self.biale_bierki) == 0:
+                        self.winner = 'czarny'
+                    if self.counter_draw_moves == 3:
+                        self.winner = 'remis'
+                        print("Remis")
+                        time.sleep(0.5)
+                        main()
+                pygame.display.flip()
 
         pygame.quit()
         sys.exit()
+
+
+class Button():
+    def __init__(self, text, width, height, pos, elevation, color, hover):
+        self.elevation = elevation
+        self.original_y_pos = pos[1]
+        self.color = color
+        self.hover = hover
+        self.clicked = False
+        self.top_rect = pygame.Rect(pos,(width,height))
+        self.top_color = color
+        self.bottom_rect = pygame.Rect(pos,(width,height))
+        font = pygame.font.Font('font/CampanaScript_PERSONAL_USE_ONLY.otf', 90)
+        self.text_surf = font.render(text,True,(255,255,255))
+        self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
+        self.name = text
+        # test
+        self.name_chess_pieces = "Nowoczesne"
+        self.name_color_board = "Drewno"
+        self.tmp_name_chess_pieces = ""
+    def window_settings(self):
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Rook-Game-Settings")
+        figure = Figure(self.name_chess_pieces)
+        figure.rysuj_bierke()
+        button_width = 250
+        button_length = 100
+        position_x = (WIDTH - button_width) / 2
+        position_y = 175
+        chess_pieces_button = Button(self.name_chess_pieces, button_width, button_length, (position_x, position_y), 20,
+                             (128, 128, 255, 128), (255, 128, 255, 128))
+        back_button = Button("Back", button_width, button_length, (position_x, position_y + 125), 20,
+                             (128, 128, 255, 128), (255, 128, 255, 128))
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.display.set_caption("Rook-Game")
+                        main()
+            background_image = pygame.image.load("grafiki/tlo1.png").convert()
+            screen.fill((255, 255, 255))
+            screen.blit(background_image, (0, 0))
+            screen.blit(figure.rysuj_bierke()[0], figure.rysuj_bierke()[1])
+            back_button.draw_button(screen)
+            chess_pieces_button.draw_button(screen)
+            pygame.display.update()
+
+    def check_action(self):
+        if self.name == "New Game":
+            f = open("settings.txt", "r")
+            chess_pieces = f.read()
+            f.close()
+            game = Game(chess_pieces)
+            game.run()
+        elif self.name == "Continuation":
+            print("Wczytanie zapisanych")
+            # tu bedzie zrobic zapisy wszystkie
+        elif self.name == "Rules":
+            screen = pygame.display.set_mode((WIDTH, HEIGHT))
+            pygame.display.set_caption("Rook-Game-Rules")
+            screen.fill('wheat3')
+
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            pygame.display.set_caption("Rook-Game")
+                            main()
+
+                background_image = pygame.image.load("grafiki/Zasady.png").convert()
+                screen_rect = screen.get_rect()
+                image_rect = background_image.get_rect()
+                image_x = screen_rect.centerx - image_rect.width // 2
+                image_y = screen_rect.centery - image_rect.height // 2
+                screen.fill((255, 244, 229))
+                screen.blit(background_image,(image_x, image_y-125))
+                pygame.display.update()
+        elif self.name == "Settings":
+            self.window_settings()
+        elif self.name in ["Nowoczesne", "Przypadki", "Maya", "Alfa", "Condal", "Leipzig"]:
+            names = ["Przypadki", "Maya", "Alfa", "Condal", "Leipzig", "Nowoczesne"]
+            index = (names.index(self.name) + 1) % len(names)
+            self.name_chess_pieces = names[index]
+            self.window_settings()
+        elif self.name == "Plansza":
+            print("plansza")
+        elif self.name == "Back":
+            main()
+        elif self.name == "Quit":
+            pygame.quit()
+            sys.exit()
+
+    def draw_button(self, screen):
+        action = False
+        pos = pygame.mouse.get_pos()
+        top_rect = self.top_rect.copy()
+        bottom_rect = self.bottom_rect.copy()
+        bottom_rect.x += 20
+        bottom_rect.y += 20
+        if top_rect.collidepoint(pos):
+            self.top_color = self.hover
+            if pygame.mouse.get_pressed()[0]:
+                self.clicked = True
+                bottom_rect.inflate_ip(self.elevation, self.elevation)
+                top_rect.inflate_ip(self.elevation, self.elevation)
+
+            elif pygame.mouse.get_pressed()[0] == 0 and self.clicked == True:
+                self.clicked = False
+                action = True
+                self.check_action()
+            self.top_color = self.hover
+        else:
+            self.top_color = self.color
+
+        bottom_surf = pygame.Surface(bottom_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(bottom_surf, 0, (0, 0, *bottom_rect.size), border_radius = 12)
+        screen.blit(bottom_surf, bottom_rect.topleft)
+
+        top_surf = pygame.Surface(top_rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(top_surf, self.top_color, (0, 0, *top_rect.size), border_radius = 12)
+        screen.blit(top_surf, top_rect.topleft)
+
+        screen.blit(self.text_surf, self.text_rect)
+        return action
 
 if __name__ == "__main__":
     main()
