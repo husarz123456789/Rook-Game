@@ -1,1 +1,1 @@
-font/Alpha.TTF
+font/CHEQ_TT.TTF
