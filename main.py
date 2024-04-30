@@ -3,12 +3,13 @@ import pygame
 import sys
 import time
 import pickle
+import os
 
 pygame.init()
 
 WIDTH, HEIGHT = 800, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-WINDOW_TITLE = "Rook-Game"
+WINDOW_TITLE = "Gra-Wiezami"
 pygame.display.set_caption(WINDOW_TITLE)
 icon = pygame.image.load('grafiki/icon.png')
 pygame.display.set_icon(icon)
@@ -25,13 +26,13 @@ def draw_text(text, font, color, surface, x, y):
     text_rect.center = (x, y)
     surface.blit(text_obj, text_rect)
 
-def save_lists_to_file(list1, list2, filename):
+def save_lists_to_file(list1, list2, str, filename):
     with open(filename, 'wb') as file:
-        pickle.dump((list1, list2), file)
+        pickle.dump((list1, list2, str), file)
 def load_lists_from_file(filename):
     with open(filename, 'rb') as file:
-        list1, list2 = pickle.load(file)
-    return list1, list2
+        list1, list2, str = pickle.load(file)
+    return list1, list2, str
 def clear_file(filename):
     with open(filename, 'w') as file:
         pass
@@ -73,12 +74,12 @@ def main():
     position_y = 75
     path = Path('./save.txt')
     if path.is_file() and bool(path.stat().st_size):
-        load_button = Button("Continuation", button_width, button_length, (position_x, position_y), 20,(128, 128, 255, 128), (255, 128, 255, 128))
+        load_button = Button("Wznow Gre", button_width, button_length, (position_x, position_y), 20,(128, 128, 255, 128), (255, 128, 255, 128))
         position_y += 125
-    new_game_button = Button("New Game", button_width, button_length, (position_x, position_y), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    rules_button = Button("Rules", button_width, button_length, (position_x, position_y+125), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    settings_button = Button("Settings", button_width, button_length, (position_x, position_y+250), 20, (128, 128, 255, 128), (255, 128, 255, 128))
-    quit_button = Button("Quit", button_width, button_length, (position_x, position_y+375), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    new_game_button = Button("Nowa Gra", button_width, button_length, (position_x, position_y), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    rules_button = Button("Zasady", button_width, button_length, (position_x, position_y+125), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    settings_button = Button("Ustawienia", button_width, button_length, (position_x, position_y+250), 20, (128, 128, 255, 128), (255, 128, 255, 128))
+    quit_button = Button("Wyjscie", button_width, button_length, (position_x, position_y+375), 20, (128, 128, 255, 128), (255, 128, 255, 128))
     run = True
     while run:
         for event in pygame.event.get():
@@ -109,7 +110,7 @@ class Game:
         self.tlo = 'wheat3'
         self.kolor_jasny = 'wheat'
         self.kolor_ciemny = 'wheat1'
-        self.WINDOW_TITLE = "Rook-Game"
+        self.WINDOW_TITLE = "Gra-Wiezami"
         pygame.display.set_caption(self.WINDOW_TITLE)
         self.icon = pygame.image.load('grafiki/icon.png')
         pygame.display.set_icon(self.icon)
@@ -118,10 +119,11 @@ class Game:
         self.wsje_ruchy = []
 
         if iscontinued:
-            self.pola_bialych, self.pola_czarnych = load_lists_from_file(save_path)
-            print("wczytuje")
-            print(self.pola_bialych)
-            print(self.pola_czarnych)
+            self.pola_bialych, self.pola_czarnych, self.etap = load_lists_from_file(save_path)
+            # print("wczytuje")
+            # print(self.pola_bialych)
+            # print(self.pola_czarnych)
+            # print("Z pliku: " + str(self.etap))
         else:
             self.pola_bialych = [(0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (5, 7), (6, 7), (7, 7), (0, 6), (1, 6), (2, 6),
                                  (3, 6), (4, 6), (5, 6), (6, 6), (7, 6)]
@@ -256,6 +258,9 @@ class Game:
         for i in range(len(moves)):
             pygame.draw.circle(self.screen, color, (moves[i][0] * 100 + 50, moves[i][1] * 100 + 50), 5)
     def run(self):
+        if not os.path.exists(save_path):
+            with open(save_path, "w") as f:
+                pass
         run = True
         while run:
             if self.winner == 'bialy':
@@ -344,6 +349,10 @@ class Game:
                                 self.etap = 2
                                 self.tmp = 100
                                 self.wsje_ruchy = []
+                                save_lists_to_file(self.pola_bialych, self.pola_czarnych, self.etap, save_path)
+                                # print("zapisuje")
+                                # print(self.etap)
+                                # print("czarny")
                         if self.etap > 1:
                             if len(self.czarne_bierki) == 0:
                                 self.winner = 'bialy'
@@ -369,10 +378,12 @@ class Game:
                                     self.counter_draw_moves += 1
                                 else:
                                     self.counter_draw_moves = 0
-                                save_lists_to_file(self.pola_bialych, self.pola_czarnych, save_path)
-                                print("zapisuje")
-                                print(self.pola_bialych)
-                                print(self.pola_czarnych)
+                                save_lists_to_file(self.pola_bialych, self.pola_czarnych, self.etap, save_path)
+                                # print("zapisuje")
+                                # print(self.etap)
+                                # print("bialy")
+                                # print(self.pola_bialych)
+                                # print(self.pola_czarnych)
 
                     if len(self.biale_bierki) == 0:
                         self.winner = 'czarny'
@@ -408,7 +419,7 @@ class Button():
         self.tmp_name_chess_pieces = ""
     def window_settings(self):
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Rook-Game-Settings")
+        pygame.display.set_caption("Gra-Wiezami-Ustawienia")
         figure = Figure(self.name_chess_pieces)
         figure.rysuj_bierke()
         button_width = 250
@@ -417,7 +428,7 @@ class Button():
         position_y = 175
         chess_pieces_button = Button(self.name_chess_pieces, button_width, button_length, (position_x, position_y), 20,
                              (128, 128, 255, 128), (255, 128, 255, 128))
-        back_button = Button("Back", button_width, button_length, (position_x, position_y + 125), 20,
+        back_button = Button("Powrot", button_width, button_length, (position_x, position_y + 125), 20,
                              (128, 128, 255, 128), (255, 128, 255, 128))
         while True:
             for event in pygame.event.get():
@@ -426,7 +437,7 @@ class Button():
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        pygame.display.set_caption("Rook-Game")
+                        pygame.display.set_caption("Gra-Wiezami")
                         main()
             background_image = pygame.image.load("grafiki/tlo1.png").convert()
             screen.fill((255, 255, 255))
@@ -437,21 +448,23 @@ class Button():
             pygame.display.update()
 
     def check_action(self):
-        if self.name == "New Game":
+        if self.name == "Nowa Gra":
             f = open("settings.txt", "r")
             chess_pieces = f.read()
             f.close()
+            if os.path.exists(save_path):
+                os.remove(save_path)
             game = Game(chess_pieces, False)
             game.run()
-        elif self.name == "Continuation":
+        elif self.name == "Wznow Gre":
             f = open("settings.txt", "r")
             chess_pieces = f.read()
             f.close()
             game = Game(chess_pieces, True)
             game.run()
-        elif self.name == "Rules":
+        elif self.name == "Zasady":
             screen = pygame.display.set_mode((WIDTH, HEIGHT))
-            pygame.display.set_caption("Rook-Game-Rules")
+            pygame.display.set_caption("Gra-Wiezami-Zasady")
             screen.fill('wheat3')
 
             while True:
@@ -461,7 +474,7 @@ class Button():
                         sys.exit()
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            pygame.display.set_caption("Rook-Game")
+                            pygame.display.set_caption("Gra-Wiezami")
                             main()
 
                 background_image = pygame.image.load("grafiki/Zasady.png").convert()
@@ -472,7 +485,7 @@ class Button():
                 screen.fill((255, 244, 229))
                 screen.blit(background_image,(image_x, image_y-125))
                 pygame.display.update()
-        elif self.name == "Settings":
+        elif self.name == "Ustawienia":
             self.window_settings()
         elif self.name in ["Nowoczesne", "Przypadki", "Maya", "Alfa", "Condal", "Leipzig"]:
             names = ["Przypadki", "Maya", "Alfa", "Condal", "Leipzig", "Nowoczesne"]
@@ -481,9 +494,9 @@ class Button():
             self.window_settings()
         elif self.name == "Plansza":
             print("plansza")
-        elif self.name == "Back":
+        elif self.name == "Powrot":
             main()
-        elif self.name == "Quit":
+        elif self.name == "Wyjscie":
             pygame.quit()
             sys.exit()
 
