@@ -3,7 +3,9 @@ import pygame
 import sys
 import time
 import pickle
+import pygame.freetype
 import os
+
 
 pygame.init()
 
@@ -85,7 +87,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        background_image = pygame.image.load("grafiki/tlo1.png").convert()
+        background_image = pygame.image.load("grafiki/tlo.png").convert()
         WIN.fill((255, 255, 255))
         WIN.blit(background_image, (0, 0))
         if path.is_file() and bool(path.stat().st_size):
@@ -108,8 +110,12 @@ class Game:
         self.zegar = pygame.time.Clock()
         self.fps = 60
         self.tlo = 'wheat3'
+        #self.i_motyw = 1
+        #self.tlo = motywy[i_motyw][2]
         self.kolor_jasny = 'wheat'
+        #self.kolor_jasny = motywy[i_motyw][0]
         self.kolor_ciemny = 'wheat1'
+        #self.kolor_ciemny = motywy[i_motyw][1]
         self.WINDOW_TITLE = "Gra-Wiezami"
         pygame.display.set_caption(self.WINDOW_TITLE)
         self.icon = pygame.image.load('grafiki/icon.png')
@@ -266,6 +272,8 @@ class Game:
             if self.winner == 'bialy':
                 clear_file(save_path)
                 img = pygame.image.load("grafiki/bialy_win.png").convert()
+                font = pygame.freetype.Font("font/LaPicaDemo-LaPicaDemo.otf", 86)
+                font.render_to(img, (10, 10), "Wygrana bialego", (255, 255, 255))
                 screen_rect = self.screen.get_rect()
                 img_rect = img.get_rect()
                 img_x = screen_rect.centerx - img_rect.width // 2
@@ -286,7 +294,32 @@ class Game:
                 main()
             elif self.winner == 'czarny':
                 clear_file(save_path)
-                img = pygame.image.load("grafiki/czarny_win.png").convert()
+                img = pygame.image.load("grafiki/czarne_win.png").convert()
+                font = pygame.freetype.Font("font/LaPicaDemo-LaPicaDemo.otf", 78)
+                font.render_to(img, (10, 10), "Wygrana czarnego", (75, 75, 75))
+                screen_rect = self.screen.get_rect()
+                img_rect = img.get_rect()
+                img_x = screen_rect.centerx - img_rect.width // 2
+                img_y = screen_rect.centery - img_rect.height // 2
+                self.screen.fill((255, 244, 229))
+                self.screen.blit(img, (img_x, img_y))
+                pygame.display.update()
+                i = 0
+                while i < 50:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            run = False
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                main()
+                    pygame.time.wait(100)
+                    i = i + 1
+                main()
+            elif self.winner == 'remis':
+                clear_file(save_path)
+                img = pygame.image.load("grafiki/remis.jpg").convert()
+                font = pygame.freetype.Font("font/Komigo3D-Regular.ttf", 300)
+                font.render_to(img, (50, 250), "Remis", (147, 112, 219))
                 screen_rect = self.screen.get_rect()
                 img_rect = img.get_rect()
                 img_x = screen_rect.centerx - img_rect.width // 2
@@ -390,8 +423,7 @@ class Game:
                     if self.counter_draw_moves == 6:
                         self.winner = 'remis'
                         clear_file(save_path)
-                        print("Remis")
-                        main()
+                        #print("Remis")
                 pygame.display.flip()
 
         pygame.quit()
@@ -439,7 +471,7 @@ class Button():
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.set_caption("Gra-Wiezami")
                         main()
-            background_image = pygame.image.load("grafiki/tlo1.png").convert()
+            background_image = pygame.image.load("grafiki/tlo.png").convert()
             screen.fill((255, 255, 255))
             screen.blit(background_image, (0, 0))
             screen.blit(figure.rysuj_bierke()[0], figure.rysuj_bierke()[1])
